@@ -7,7 +7,7 @@ function CreateComplaint() {
   const navigate = useNavigate();
 
   const submitComplaint = async () => {
-    await axiosInstance.post("/complaints", form);
+    await axiosInstance.post("/api/complaints", form);
     navigate("/dashboard");
   };
 

@@ -25,7 +25,7 @@ function UserDashboard() {
     try {
       setLoading(true);
       setError("");
-      const res = await axiosInstance.get("/complaints");
+      const res = await axiosInstance.get("/api/complaints");
       setComplaints(res.data);
     } catch (err) {
       console.error("Error fetching complaints:", err);
@@ -54,7 +54,7 @@ function UserDashboard() {
         return;
       }
       
-      await axiosInstance.post("/complaints", form);
+      await axiosInstance.post("/api/complaints", form);
       
       setForm({ title: "", description: "" });
       setShowCreateModal(false);
@@ -77,7 +77,7 @@ function UserDashboard() {
         return;
       }
       
-      await axiosInstance.put(`/complaints/${editForm.id}`, {
+      await axiosInstance.put(`/api/complaints/${editForm.id}`, {
         title: editForm.title,
         description: editForm.description
       });
@@ -94,7 +94,7 @@ function UserDashboard() {
 
   const deleteComplaint = async () => {
     try {
-      await axiosInstance.delete(`/complaints/${complaintToDelete}`);
+      await axiosInstance.delete(`/api/complaints/${complaintToDelete}`);
       setShowDeleteModal(false);
       setComplaintToDelete(null);
       setSuccess("Complaint deleted successfully!");

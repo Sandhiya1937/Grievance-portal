@@ -23,7 +23,7 @@ function AdminDashboard() {
     try {
       setLoading(true);
       setError("");
-      const res = await axiosInstance.get("/admin/complaints");
+      const res = await axiosInstance.get("/api/admin/complaints");
       setComplaints(res.data);
     } catch (err) {
       console.error("Error fetching complaints:", err);
@@ -40,7 +40,7 @@ function AdminDashboard() {
 
   const updateStatus = async (id, status) => {
     try {
-      await axiosInstance.put(`/admin/complaints/${id}`, { status });
+      await axiosInstance.put(`/api/admin/complaints/${id}`, { status });
       
       setComplaints(prev => 
         prev.map(c => c._id === id ? { ...c, status } : c)
