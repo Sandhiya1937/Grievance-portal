@@ -29,7 +29,7 @@ function Signup() {
 
   const googleSignup = async (credentialResponse) => {
     try {
-      const res = await api.post("/apiauth/google", {
+      const res = await api.post("/api/auth/google", {
         id_token: credentialResponse.credential
       });
       
