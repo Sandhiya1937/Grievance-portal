@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:5000/api";
-
+const API = "https://grievance-portal-9amn.onrender.com/api";
 // Create axios instance
 export const axiosInstance = axios.create({
   baseURL: API,
