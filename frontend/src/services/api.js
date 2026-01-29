@@ -1,9 +1,12 @@
 import axios from "axios";
 
-const API = "https://grievance-portal-9amn.onrender.com/api";
+// Use environment variable if available, otherwise use the deployed URL
+const API = process.env.REACT_APP_API_URL || "https://grievance-portal-9amn.onrender.com/api";
+
 // Create axios instance
 export const axiosInstance = axios.create({
   baseURL: API,
+  timeout: 10000, // 10 seconds timeout
 });
 
 // Add request interceptor to attach token dynamically
@@ -16,6 +19,7 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error("Request interceptor error:", error);
     return Promise.reject(error);
   }
 );
@@ -26,7 +30,24 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error("API Error:", error.response?.status, error.message);
+    console.error("API Error Details:", {
+      status: error.response?.status,
+      message: error.message,
+      code: error.code,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+      }
+    });
+    
+    // Handle network errors (backend not reachable)
+    if (!error.response) {
+      console.error("Network error - Backend might be down or unreachable");
+      alert("Cannot connect to server. Please check your internet connection or try again later.");
+      
+      // Don't clear storage for network errors - user might come back online
+      return Promise.reject(error);
+    }
     
     if (error.response?.status === 401) {
       // Token expired or invalid
@@ -44,6 +65,17 @@ axiosInstance.interceptors.response.use(
     
     if (error.response?.status === 403) {
       console.log("Access denied - insufficient permissions");
+      alert("You don't have permission to access this resource.");
+    }
+    
+    // Handle other common errors
+    if (error.response?.status === 404) {
+      console.log("API endpoint not found:", error.config?.url);
+    }
+    
+    if (error.response?.status === 500) {
+      console.log("Server error occurred");
+      alert("Server error. Please try again later.");
     }
     
     return Promise.reject(error);
@@ -53,6 +85,7 @@ axiosInstance.interceptors.response.use(
 // Helper function for regular axios calls (without interceptor)
 export const api = axios.create({
   baseURL: API,
+  timeout: 10000,
 });
 
 // Helper to decode JWT token
@@ -61,7 +94,13 @@ export const decodeToken = (token) => {
     if (!token) return null;
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(window.atob(base64));
+    const jsonPayload = decodeURIComponent(
+      window.atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
   } catch (error) {
     console.error("Error decoding token:", error);
     return null;
@@ -74,7 +113,7 @@ export const getUserRole = () => {
   if (!token) return null;
   
   const decoded = decodeToken(token);
-  return decoded?.role || null;
+  return decoded?.role || localStorage.getItem("userRole");
 };
 
 // Helper to check if token is expired
@@ -86,4 +125,34 @@ export const isTokenExpired = () => {
   if (!decoded || !decoded.exp) return true;
   
   return decoded.exp * 1000 < Date.now();
+};
+
+// Helper to check if user is authenticated
+export const isAuthenticated = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return false;
+  
+  return !isTokenExpired();
+};
+
+// Helper to get user data from token
+export const getUserData = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  
+  const decoded = decodeToken(token);
+  return {
+    id: decoded?.id,
+    role: decoded?.role,
+    exp: decoded?.exp,
+    iat: decoded?.iat
+  };
+};
+
+// Helper to log out user
+export const logout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("userData");
+  window.location.href = "/login";
 };
