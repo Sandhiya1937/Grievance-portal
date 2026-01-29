@@ -14,7 +14,7 @@ function Login() {
         return;
       }
 
-      const res = await api.post("/auth/login", form);
+      const res = await api.post("/api/auth/login", form);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userRole", res.data.role);
       alert("Login successful!");
@@ -32,7 +32,7 @@ function Login() {
 
   const googleLogin = async (credentialResponse) => {
     try {
-      const res = await api.post("/auth/google", {
+      const res = await api.post("/api/auth/google", {
         id_token: credentialResponse.credential
       });
       

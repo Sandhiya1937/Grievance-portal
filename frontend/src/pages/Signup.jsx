@@ -19,7 +19,7 @@ function Signup() {
         return;
       }
 
-      const res = await api.post("/auth/signup", form);
+      const res = await api.post("/api/auth/signup", form);
       alert(`Registered successfully as ${res.data.role || "user"}! Please login.`);
       navigate("/login");
     } catch (err) {
@@ -29,7 +29,7 @@ function Signup() {
 
   const googleSignup = async (credentialResponse) => {
     try {
-      const res = await api.post("/auth/google", {
+      const res = await api.post("/apiauth/google", {
         id_token: credentialResponse.credential
       });
       
