@@ -2,9 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { api } from "../services/api";
+import "./Signup.css";
 
 function Signup() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
   const navigate = useNavigate();
 
   const register = async () => {
@@ -19,83 +25,97 @@ function Signup() {
         return;
       }
 
-      const res = await api.post("/api/auth/signup", form);
-      alert(`Registered successfully as ${res.data.role || "user"}! Please login.`);
+      await api.post("/api/auth/signup", form);
+
+      alert("Account created successfully! Please login.");
       navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Registration failed. Please try again.");
+      alert(err.response?.data?.message || "Signup failed. Please try again.");
     }
   };
 
   const googleSignup = async (credentialResponse) => {
     try {
       const res = await api.post("/api/auth/google", {
-        id_token: credentialResponse.credential
+        id_token: credentialResponse.credential,
       });
-      
+
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userRole", res.data.role);
+
       alert("Google signup successful!");
-      
-      if (res.data.role === "admin") {
-        navigate("/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      navigate("/dashboard");
     } catch (err) {
-      console.error("Google signup error:", err);
-      alert("Google signup failed: " + (err.response?.data?.message || "Please try again."));
+      alert(
+        "Google signup failed: " +
+          (err.response?.data?.message || "Please try again.")
+      );
     }
   };
 
   return (
-    <div className="auth-container">
-      <h2>Signup</h2>
-      <input
-        placeholder="Full Name"
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
-      />
-      <input
-        type="password"
-        placeholder="Password (min. 6 characters)"
-        value={form.password}
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
-      />
-      <button onClick={register}>Signup</button>
+    <div className="signup-page">
+      <div className="signup-card">
+        <h2>Create Account </h2>
+        <p className="subtitle">Join us and get started</p>
 
-      <div style={{ margin: "20px 0", textAlign: "center" }}>
-        <p>Or sign up with</p>
-        <GoogleLogin 
-          onSuccess={googleSignup} 
-          onError={() => {
-            console.log("Google Signup Failed");
-            alert("Google signup failed. Please try again.");
-          }}
-          text="signup_with"
-          theme="filled_blue"
-          size="large"
-          width="100%"
-        />
+        <div className="input-group">
+          <input
+            placeholder="Full name"
+            value={form.name}
+            onChange={(e) =>
+              setForm({ ...form, name: e.target.value })
+            }
+          />
+        </div>
+
+        <div className="input-group">
+          <input
+            type="email"
+            placeholder="Email address"
+            value={form.email}
+            onChange={(e) =>
+              setForm({ ...form, email: e.target.value })
+            }
+          />
+        </div>
+
+        <div className="input-group">
+          <input
+            type="password"
+            placeholder="Password (min 6 characters)"
+            value={form.password}
+            onChange={(e) =>
+              setForm({ ...form, password: e.target.value })
+            }
+          />
+        </div>
+
+        <button className="signup-btn" onClick={register}>
+          Create Account
+        </button>
+
+        <div className="divider">
+          <span>OR</span>
+        </div>
+
+        <div className="google-btn">
+          <GoogleLogin
+            onSuccess={googleSignup}
+            onError={() => alert("Google signup failed")}
+            theme="outline"
+            size="large"
+            width="100%"
+          />
+        </div>
+
+        <p className="login-text">
+          Already have an account?
+          <span onClick={() => navigate("/login")}>
+            {" "}Login
+          </span>
+        </p>
       </div>
-
-      <p 
-        onClick={() => navigate("/login")} 
-        style={{ 
-          cursor: "pointer", 
-          textAlign: "center", 
-          color: "#007bff",
-          marginTop: "20px"
-        }}
-      >
-        Already have an account? Login
-      </p>
     </div>
   );
 }
